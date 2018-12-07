@@ -37,13 +37,13 @@ updater = Updater('778814536:AAGZp7325xBl2fb73PgAI7bQTYfV9Ao44sk',
 
 print('setup')
 
-# updater.dispatcher.add_handler(CommandHandler('hello', hello))
-# updater.dispatcher.add_handler(CommandHandler('start', start))
+updater.dispatcher.add_handler(CommandHandler('hello', hello))
+updater.dispatcher.add_handler(CommandHandler('start', start))
 
-# print('get_me')
-# print(updater.bot.get_me())
+print('get_me')
+print(updater.bot.get_me())
 
-# print('start_polling')
+print('start_polling')
 
-# updater.start_polling()
-# updater.idle()
+updater.start_polling()
+updater.idle()
