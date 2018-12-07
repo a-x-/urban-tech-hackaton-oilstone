@@ -1,5 +1,19 @@
 from telegram.ext import Updater, CommandHandler
 
+from http.server import BaseHTTPRequestHandler
+from cowpy import cow
+
+
+class handler(BaseHTTPRequestHandler):
+
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        message = cow.Cowacter().milk('Hello from Python on Now Lambda!1111111')
+        self.wfile.write(message.encode())
+        return
+
 REQUEST_KWARGS = {
     'proxy_url': 'socks5://37.139.30.202:5656',
     # Optional, if you need authentication:
