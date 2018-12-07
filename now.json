@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "*.py",
-      "use": "@now/python"
+      "use": "@now/python",
+      "config": {
+        "maxLambdaSize": "10mb"
+      }
     }
   ]
 }
