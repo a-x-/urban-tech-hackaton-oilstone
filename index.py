@@ -1,4 +1,5 @@
 # todo: send Fake Typing Indicator as loading
+# todo: /debug mode
 
 import os
 import sys
@@ -20,7 +21,7 @@ class handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
-        message = cow.Cowacter().milk('Hello from Python on Now Lambda!1111111')
+        message = cow.Cowacter().milk('Hello from OilStone chatBot!1111111')
         self.wfile.write(message.encode())
         return
 
@@ -34,17 +35,16 @@ SUPER_USERS = [
     218439424,  # monty
 ]
 API_ORIGIN = 'http://37.228.118.11:8080'
-PHOTOS_URL_ORIGIN = 'https://invntrm.ru'
+PORT = 8088
+PHOTOS_URL_ORIGIN = 'http://uiguy.ru'  # 37.139.30.202
 PHOTOS_URL_PATH = '/oil-stone-urban-hackaton/photos'
-PHOTOS_LOCAL_DIR = '/var/www/invntrm.ru'
+PHOTOS_LOCAL_DIR = '/var/www/uiguy.ru'
 
 STAGES = {
     'initial': 'initial',
     'geolocation': 'geolocation',
     'shop_select': 'shop_select',
     'photos_upload': 'photos_upload',
-    'result_awaiting': 'result_awaiting',
-    'got_result': 'got_result',
 }
 
 print('setup')
@@ -190,7 +190,8 @@ def onMessage(msg, chat_id, content_type):
                 users[chat_id]['shop_id'] = id
                 set_stage('photos_upload')
                 send(
-                    '🤳 Отлично! Выбран %s\nТеперь сделайте одну или несколько фотографий стеллажей с майонезами Слобода\n\n💡 Tip: упаковки должны быть хорошо видны' % msg['text'],
+                    '🤳 Отлично! Выбран %s\nТеперь сделайте одну или несколько фотографий стеллажей с майонезами «Слобода»\n\n💡 Tip: упаковки должны быть хорошо видны' % msg[
+                        'text'],
                     reply_markup=ReplyKeyboardRemove())
 
     elif stage == 'photos_upload':
@@ -213,12 +214,12 @@ def onMessage(msg, chat_id, content_type):
             except Exception as e:
                 print(e)
                 send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
+        else:
+            send('Okay... но нужна фотография витрины с майонезами «Слобода»')
 
     else:
         count += 1
         send((msg['text'] + " #%d") % count)
-
-        #     'got_result': 'got_result',
 
 
 def shop_button(shop):
@@ -250,6 +251,6 @@ bot = telepot.Bot(TOKEN)
 MessageLoop(bot, handle).run_as_thread()
 
 
-print('start localhost:8088')
-serv = HTTPServer(("localhost", 8088), handler)
+print('start localhost:%s' % PORT)
+serv = HTTPServer(("localhost", PORT), handler)
 serv.serve_forever()
