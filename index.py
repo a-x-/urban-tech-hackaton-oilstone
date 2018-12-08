@@ -149,8 +149,9 @@ def onMessage(msg, chat_id, content_type):
             send('🙏 Спасибо! Сейчас уточним магазин...')
             location = msg['location']
             try:
-                r = requests.get('%s/geo?latitude=%f&longitude=%f' %
-                                 (API_ORIGIN, location['latitude'], location['longitude']))
+                url = '%s/geo?latitude=%f&longitude=%f' % (API_ORIGIN, location['latitude'], location['longitude'])
+                print('url', url)
+                r = requests.get(url)
                 print(r, r.json(), r.status_code)
                 if r.status_code == 200 or r.status_code == 201:
                     # shops = [ {'shop_id': 42, 'name': 'Пятёра'}, ]
