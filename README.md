@@ -8,7 +8,7 @@ pip3 install -r requirements.txt
 python 3.6+
 port: 8088
 
-## setup server
+## setup server before
 ```bash
 
 add-apt-repository ppa:jonathonf/python-3.7
