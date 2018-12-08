@@ -11,6 +11,8 @@ python 3.6+
 ```bash
 
 add-apt-repository ppa:jonathonf/python-3.7
+add-apt-repository ppa:deadsnakes/ppa
+
 apt-get update && apt-get install -y python3.7 git nginx
 apt-get install -y python3-pip
 
