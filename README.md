@@ -6,6 +6,7 @@ pip3 install -r requirements.txt
 ```
 
 python 3.6+
+port: 8088
 
 ## setup server
 ```bash
@@ -19,6 +20,4 @@ apt-get install -y python3-pip
 export LC_ALL="en_US.UTF-8"
 export LC_CTYPE="en_US.UTF-8"
 sudo dpkg-reconfigure locales
-
-pip3 install --upgrade pip
 ```
