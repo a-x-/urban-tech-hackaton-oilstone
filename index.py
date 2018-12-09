@@ -235,7 +235,7 @@ def onMessage(msg, chat_id, content_type):
                 send(
                     '😬 Нужно название мазазина из найденных вариантов,\nесли не нашёлся нужный — Сорян :(')
             else:
-                shop = shops[int(match.group(0))]
+                shop = shops[int(match.group(0)) - 1]
                 id = shop['shop_id']
                 users[chat_id]['shop_id'] = id
                 set_stage('photos_upload')
@@ -280,12 +280,13 @@ def onMessage(msg, chat_id, content_type):
 
 
 def shop_button(i, shop, shops):
+    human_i = i + 1
     printf(shop)
     matches = [x for x in shops if x['name'] == shop['name']]
     if len(matches) != 1:
-        name = '%d. %s (%s)' % (i, shop['name'], shop['shop_address'])
+        name = '%d. %s (%s)' % (human_i, shop['name'], shop['shop_address'])
     else:
-        name = '%d. %s' % (i, shop['name'])
+        name = '%d. %s' % (human_i, shop['name'])
 
     kb = KeyboardButton(text=name)
     printf(kb)
