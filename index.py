@@ -13,15 +13,20 @@ from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboar
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from cowpy import cow
 
+with open('pid', 'w') as pid_file:
+    pid_file.write('%d\n' % os.getpid())
 
 class handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
+        self.log_request()
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
-        message = cow.Cowacter().milk('Hello from OilStone chatBot!1111111')
-        self.wfile.write(message.encode())
+        if self.path.startswith('/task'):
+            print('<< server', self.path, 'method', self.command)
+        # message = cow.Cowacter().milk('Hello from OilStone chatBot!1111111')
+        # self.wfile.write(message.encode())
         return
 
 
