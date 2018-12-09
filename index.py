@@ -177,8 +177,8 @@ def onMessage(msg, chat_id, content_type):
                     reply_markup=ReplyKeyboardRemove())
 
     elif stage == 'photos_upload':
-        if content_type == 'photo':
-            photo = msg['photo'][-1]
+        if content_type == 'photo' or content_type == 'document':
+            photo = msg['photo'][-1] if content_type == 'photo' else msg['document']
             try:
                 source_photo_path = getFileLInk(photo['file_id'])
                 print('source_photo_path:')
