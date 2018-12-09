@@ -175,7 +175,7 @@ def gen_task_id(user, file_id):
 def onMessage(msg, chat_id, content_type):
     global users, count
 
-    def send(text, reply_markup=[[ReplyKeyboardRemove()]]):
+    def send(text, reply_markup=ReplyKeyboardRemove()):
         return bot.sendMessage(chat_id, text, reply_markup=reply_markup)
 
     stage = users[chat_id]['stage']
