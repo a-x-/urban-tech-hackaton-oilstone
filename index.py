@@ -274,12 +274,13 @@ def onMessage(msg, chat_id, content_type):
                 elif content_type == 'document':
                     photo = msg['document']
                 else:
-                    photo = {'file_id': 'BQADAgADigMAAtc7aEjbIuRo9U82mQI'}
+                    photo = None
                 try:
                     if photo is not None:
                         source_photo_path = getFileLink(photo['file_id'])
                     else:
                         source_photo_path = 'http://lonthra.kalan.cc/photo_2018-12-09_20-29-35.jpg'
+                        photo = {'file_id': 'AAAAAAAAAAAAAAAAAAAAAAAAAsample'}
                     printf('source_photo_path:')
                     printf(source_photo_path)
                     photo_path = '%s/%s.jpg' % (PHOTOS_URL_PATH,
