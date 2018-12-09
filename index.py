@@ -84,20 +84,20 @@ class server_handler(BaseHTTPRequestHandler):
                 (task, i) = [(x, i) for i, x in enumerate(
                     users[user_id]['photos']) if x['task_id'] == task_id][0]
 
-                printf('photo', task, i, json['status'])
+                printf('photo', task, i, json['state'])
 
-                human_status = {
+                human_state = {
                     'processed': 'успешно обработано, баллы начислены! ❤️',
                     'error': 'какое-то не такое. ¯\_(ツ)_/¯\n😞 Попробуем ещё разок?',
                     'processing': 'ещё обрабатывается',
-                }[json['status']]
+                }[json['state']]
 
                 if len(users[user_id]['photos']) > 1:
-                    bot.sendMessage(user_id, 'Фото №%d %s' % (i + 1, human_status), reply_markup=kb([[
+                    bot.sendMessage(user_id, 'Фото №%d %s' % (i + 1, human_state), reply_markup=kb([[
                         KeyboardButton(text='Закончить')
                     ]]))
                 else:
-                    bot.sendMessage(user_id, 'Фото %s' % human_status, reply_markup=kb([[
+                    bot.sendMessage(user_id, 'Фото %s' % human_state, reply_markup=kb([[
                         KeyboardButton(text='Закончить')
                     ]]))
             else:
