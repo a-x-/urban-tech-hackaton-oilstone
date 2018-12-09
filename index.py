@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # todo: send Fake Typing Indicator as loading
 # todo: /debug mode
 
@@ -16,6 +18,11 @@ from cowpy import cow
 with open('pid', 'w') as pid_file:
     pid_file.write('%d\n' % os.getpid())
 
+
+def printf(*args):
+    print(*args, flush=True)
+
+
 class handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
@@ -24,7 +31,7 @@ class handler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
         if self.path.startswith('/task'):
-            print('<< server', self.path, 'method', self.command)
+            printf('<< server', self.path, 'method', self.command)
         # message = cow.Cowacter().milk('Hello from OilStone chatBot!1111111')
         # self.wfile.write(message.encode())
         return
@@ -50,7 +57,7 @@ STAGES = {
     'photos_upload': 'photos_upload',
 }
 
-print('setup')
+printf('setup')
 
 count = 0
 users = {}
@@ -99,11 +106,11 @@ def start_processing(user, file_id, photo_path):
         'shop_id',
     ]}
 
-    print('\n\nstart_processing...\n', 'task', task, 'query', query)
+    printf('\n\nstart_processing...\n', 'task', task, 'query', query)
 
     r = requests.post('%s/task' % API_ORIGIN, query)
-    print('task inited')
-    print(r, r.json(), r.status_code)
+    printf('task inited')
+    printf(r, r.json(), r.status_code)
 
 
 def gen_task_id(user, file_id):
@@ -122,7 +129,7 @@ def onMessage(msg, chat_id, content_type):
         users[chat_id]['stage'] = stage
         users[chat_id]['stage_data'] = data
 
-    print("stage: %s" % stage)
+    printf("stage: %s" % stage)
 
     if stage == 'initial':
         if content_type == 'text' and msg['text'].endswith('/start'):
@@ -135,10 +142,11 @@ def onMessage(msg, chat_id, content_type):
             send('🙏 Спасибо! Сейчас уточним магазин...')
             location = msg['location']
             try:
-                url = '%s/geo?latitude=%f&longitude=%f' % (API_ORIGIN, location['latitude'], location['longitude'])
-                print('url', url)
+                url = '%s/geo?latitude=%f&longitude=%f' % (
+                    API_ORIGIN, location['latitude'], location['longitude'])
+                printf('url', url)
                 r = requests.get(url)
-                print(r, r.json(), r.status_code)
+                printf(r, r.json(), r.status_code)
                 if r.status_code == 200 or r.status_code == 201:
                     # shops = [ {'shop_id': 42, 'name': 'Пятёра'}, ]
                     shops = r.json()
@@ -154,11 +162,11 @@ def onMessage(msg, chat_id, content_type):
                     send('😰 Упс! %s.\n\nПопробуем ещё раз через минутку?' %
                          r.json()['error'])
             except RequestException as e:
-                print('RequestException')
-                print(e)
+                printf('RequestException')
+                printf(e)
                 send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
             except Exception as e:
-                print(e)
+                printf(e)
                 send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
         else:
             send('Okay... но нужна геолокация, без неё не получится определить магазин, в которов вы находитесь')
@@ -166,9 +174,9 @@ def onMessage(msg, chat_id, content_type):
     elif stage == 'shop_select':
         if content_type == 'text':
             shops = users[chat_id]['stage_data']['shops']
-            print('shops', shops)
+            printf('shops', shops)
             matches = [x for x in shops if x['name'] == msg['text']]
-            print('matches', matches)
+            printf('matches', matches)
             if len(matches) != 1:
                 send(
                     '😬 Нужно название мазазина из найденных вариантов,\nесли не нашёлся нужный — Сорян :(')
@@ -186,20 +194,21 @@ def onMessage(msg, chat_id, content_type):
             photo = msg['photo'][-1] if content_type == 'photo' else msg['document']
             try:
                 source_photo_path = getFileLInk(photo['file_id'])
-                print('source_photo_path:')
-                print(source_photo_path)
+                printf('source_photo_path:')
+                printf(source_photo_path)
                 photo_path = '%s/%s.jpg' % (PHOTOS_URL_PATH, photo['file_id'])
                 save_photo(source_photo_path, '%s%s' %
                            (PHOTOS_LOCAL_DIR, photo_path))
-                start_processing(users[chat_id], photo['file_id'], '%s%s' % (PHOTOS_URL_ORIGIN, photo_path))
+                start_processing(users[chat_id], photo['file_id'], '%s%s' % (
+                    PHOTOS_URL_ORIGIN, photo_path))
                 send(
                     '🌈 Класс! Уже обрабатываем фотку.\n📸 Сделайте ещё одну или несколько фотографий или ожидайте результат')
             except RequestException as e:
-                print('RequestException')
-                print(e)
+                printf('RequestException')
+                printf(e)
                 send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
             except Exception as e:
-                print(e)
+                printf(e)
                 send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
         else:
             send('Okay... но нужна фотография витрины с майонезами «Слобода»')
@@ -210,17 +219,17 @@ def onMessage(msg, chat_id, content_type):
 
 
 def shop_button(shop):
-    print(shop)
+    printf(shop)
     kb = KeyboardButton(text=shop['name'])
-    print(kb)
+    printf(kb)
     return kb
 
 
 def handle(msg):
     global count, users
     content_type, chat_type, chat_id = telepot.glance(msg)
-    print(content_type, chat_type, chat_id)
-    print(msg)
+    printf(content_type, chat_type, chat_id)
+    printf(msg)
 
     if not users.get(chat_id):
         users[chat_id] = initial_user({'id': chat_id})
@@ -232,12 +241,12 @@ def is_super_user(id):
     return id in SUPER_USERS
 
 
-print('start tg polling')
+printf('start tg polling')
 
 bot = telepot.Bot(TOKEN)
 MessageLoop(bot, handle).run_as_thread()
 
 
-print('start localhost:%s' % PORT)
+printf('start localhost:%s' % PORT)
 serv = HTTPServer(("localhost", PORT), handler)
 serv.serve_forever()

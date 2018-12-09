@@ -6,7 +6,7 @@ all:
 deploy: all
 
 restart:
-	kill -15 $(cat ./pid) && make start
+	kill -15 $(cat ./pid); make start
 
 start:
 	python3 index.py
