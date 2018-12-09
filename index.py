@@ -175,7 +175,7 @@ def gen_task_id(user, file_id):
 def onMessage(msg, chat_id, content_type):
     global users, count
 
-    def send(text, reply_markup=None):
+    def send(text, reply_markup=[[ReplyKeyboardRemove()]]):
         return bot.sendMessage(chat_id, text, reply_markup=reply_markup)
 
     stage = users[chat_id]['stage']
@@ -208,7 +208,9 @@ def onMessage(msg, chat_id, content_type):
                     set_stage('shop_select', data={'shops': shops})
 
                     keyboard = ReplyKeyboardMarkup(
-                        keyboard=[shop_button(i, shop, shops) for i, shop in enumerate(shops)])
+                        keyboard=[shop_button(i, shop, shops) for i, shop in enumerate(shops)] + [[
+                            KeyboardButton(text='Отменить')
+                        ]])
 
                     send('Выберите магазин в котором вы находитесь',
                          reply_markup=keyboard)
@@ -230,6 +232,10 @@ def onMessage(msg, chat_id, content_type):
         if content_type == 'text':
             shops = users[chat_id]['stage_data']['shops']
             printf('shops', shops)
+            if msg['text'] == 'Отменить':
+                set_stage('initial')
+                return
+
             match = re.search('^\\d+', msg['text'])
             if not match:
                 send(
@@ -242,7 +248,9 @@ def onMessage(msg, chat_id, content_type):
                 send(
                     '🤳 Отлично! Выбран мазазан «%s».\nТеперь сделайте одну или несколько фотографий стеллажей с майонезами «Слобода»\n\n💡 Tip: упаковки должны быть хорошо видны'
                         % shop['name'],
-                    reply_markup=ReplyKeyboardRemove())
+                    reply_markup=[[
+                        KeyboardButton(text='Закончить')
+                    ]])
 
     elif stage == 'photos_upload':
         if content_type == 'photo' or (content_type == 'document' and msg['document']['mime_type'].startswith('image/')):
@@ -271,6 +279,10 @@ def onMessage(msg, chat_id, content_type):
             except Exception as e:
                 printf(e)
                 send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
+
+        elif content_type == 'text' and msg['text'] == 'Закончить':
+            set_stage('initial')
+
         else:
             send('Okay... но нужна фотография витрины с майонезами «Слобода»')
 
