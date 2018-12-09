@@ -90,8 +90,7 @@ class handler(BaseHTTPRequestHandler):
                 if len(users[user_id]['photos']) > 1:
                     bot.sendMessage(user_id, 'Фото №%d %s' % (i + 1, human_status))
                 else:
-                    bot.sendMessage(user_id, 'Фото %s' %
-                                    (i + 1, human_status))
+                    bot.sendMessage(user_id, 'Фото %s' % human_status)
             else:
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
