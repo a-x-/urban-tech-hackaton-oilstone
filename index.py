@@ -82,32 +82,20 @@ def start_processing(user, file_id, photo_path):
         'photo_path': photo_path,
     })
 
-    print('\n\nstart_processing...\n', 'task', task)
-    print('%s/task?\
-      task_id=%s&\
-      priority=%d&\
-      photo_path=%s&\
-      user_id=%d&\
-      shop_id=%d' % (
-        API_ORIGIN,
-        task['task_id'],
-        task['priority'],
-        task['photo_path'],
-        task['user_id'],
-        task['shop_id'],
-    ))
-
     # todo: add_user_photo({photo_path, task_id}) # users[chat_id].photos.push({ photo_path, task_id })
 
     # http -vj POST 'http://37.228.118.11:8080/task?task_id=42&priority=2&photo_path=https://invntrm.ru/path/to/img.jpg&user_id=147445817&shop_id=423'
 
     query = {key: task[key] for key in [
-        'task_id'
-        'priority'
-        'photo_path'
-        'user_id'
-        'shop_id'
+        'task_id',
+        'priority',
+        'photo_path',
+        'user_id',
+        'shop_id',
     ]}
+
+    print('\n\nstart_processing...\n', 'task', task, 'query', query)
+
     r = requests.post('%s/task' % API_ORIGIN, query)
     print('task inited')
     print(r, r.json(), r.status_code)
