@@ -5,6 +5,7 @@
 
 import os
 import sys
+import re
 import requests
 from requests.exceptions import RequestException
 import urllib.parse as urlparse
@@ -207,7 +208,7 @@ def onMessage(msg, chat_id, content_type):
                     set_stage('shop_select', data={'shops': shops})
 
                     keyboard = ReplyKeyboardMarkup(
-                        keyboard=[[shop_button(shop, shops) for shop in shops]])
+                        keyboard=[shop_button(i, shop, shops) for i, shop in enumerate(shops)])
 
                     send('Выберите магазин в котором вы находитесь',
                          reply_markup=keyboard)
@@ -229,18 +230,18 @@ def onMessage(msg, chat_id, content_type):
         if content_type == 'text':
             shops = users[chat_id]['stage_data']['shops']
             printf('shops', shops)
-            matches = [x for x in shops if x['name'] == msg['text']]
-            printf('matches', matches)
-            if len(matches) != 1:
+            match = re.search('^\\d+', msg['text'])
+            if not match:
                 send(
                     '😬 Нужно название мазазина из найденных вариантов,\nесли не нашёлся нужный — Сорян :(')
             else:
-                id = matches[0]['shop_id']
+                shop = shops[int(match.group(0))]
+                id = shop['shop_id']
                 users[chat_id]['shop_id'] = id
                 set_stage('photos_upload')
                 send(
-                    '🤳 Отлично! Выбран мазазан «%s».\nТеперь сделайте одну или несколько фотографий стеллажей с майонезами «Слобода»\n\n💡 Tip: упаковки должны быть хорошо видны' % msg[
-                        'text'],
+                    '🤳 Отлично! Выбран мазазан «%s».\nТеперь сделайте одну или несколько фотографий стеллажей с майонезами «Слобода»\n\n💡 Tip: упаковки должны быть хорошо видны'
+                        % shop['name'],
                     reply_markup=ReplyKeyboardRemove())
 
     elif stage == 'photos_upload':
@@ -278,17 +279,17 @@ def onMessage(msg, chat_id, content_type):
         send((msg['text'] + " #%d") % count)
 
 
-def shop_button(shop, shops):
+def shop_button(i, shop, shops):
     printf(shop)
     matches = [x for x in shops if x['name'] == shop['name']]
     if len(matches) != 1:
-        name = '%s (%s)' % (shop['name'], shop['shop_address'])
+        name = '%d. %s (%s)' % (i, shop['name'], shop['shop_address'])
     else:
-        name = shop['name']
+        name = '%d. %s' % (i, shop['name'])
 
     kb = KeyboardButton(text=name)
     printf(kb)
-    return kb
+    return [kb]
 
 
 def handle(msg):
