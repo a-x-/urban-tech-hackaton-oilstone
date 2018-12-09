@@ -131,9 +131,6 @@ def onMessage(msg, chat_id, content_type):
 
     print("stage: %s" % stage)
 
-    if msg['text'] == '/die':
-        sys.exit()
-
     if stage == 'initial':
         if content_type == 'text' and msg['text'].endswith('/start'):
             set_stage('geolocation')
