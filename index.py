@@ -234,6 +234,7 @@ def onMessage(msg, chat_id, content_type):
             printf('shops', shops)
             if msg['text'] == 'Отменить':
                 set_stage('initial')
+                send('Ок. Чтобы повторить снова напишите /start ;-)')
                 return
 
             match = re.search('^\\d+', msg['text'])
@@ -282,6 +283,7 @@ def onMessage(msg, chat_id, content_type):
 
         elif content_type == 'text' and msg['text'] == 'Закончить':
             set_stage('initial')
+            send('Ок. Чтобы повторить снова напишите /start ;-)')
 
         else:
             send('Okay... но нужна фотография витрины с майонезами «Слобода»')
