@@ -10,6 +10,7 @@ from requests.exceptions import RequestException
 import urllib.parse as urlparse
 from json import dumps as json_dump
 from json import loads as json_parse
+from random import randint
 
 import telepot
 from telepot.loop import MessageLoop
@@ -167,7 +168,7 @@ def start_processing(user, file_id, photo_path):
 
 
 def gen_task_id(user, file_id):
-    return '%d-%s' % (user['id'], file_id)
+    return '%d-%s-%d' % (user['id'], file_id, randint(0, 1e6))
 
 
 def onMessage(msg, chat_id, content_type):
@@ -185,7 +186,7 @@ def onMessage(msg, chat_id, content_type):
     printf("stage: %s" % stage)
 
     if stage == 'initial':
-        if content_type == 'text' and msg['text'].endswith('/start'):
+        if content_type == 'text' and msg['text'].startsswith('/start'):
             set_stage('geolocation')
             send('📍 Здравствуйте, %s! Хотите заработать на походах в магазин?\nОтправьте геолокацию, чтобы определить магазин.\n\n💡 Tip: кнопка слева от текстового поля' %
                  msg['from']['first_name'])
@@ -206,7 +207,7 @@ def onMessage(msg, chat_id, content_type):
                     set_stage('shop_select', data={'shops': shops})
 
                     keyboard = ReplyKeyboardMarkup(
-                        keyboard=[[shop_button(shop) for shop in shops]])
+                        keyboard=[[shop_button(shop, shops) for shop in shops]])
 
                     send('Выберите магазин в котором вы находитесь',
                          reply_markup=keyboard)
@@ -238,7 +239,7 @@ def onMessage(msg, chat_id, content_type):
                 users[chat_id]['shop_id'] = id
                 set_stage('photos_upload')
                 send(
-                    '🤳 Отлично! Выбран %s\nТеперь сделайте одну или несколько фотографий стеллажей с майонезами «Слобода»\n\n💡 Tip: упаковки должны быть хорошо видны' % msg[
+                    '🤳 Отлично! Выбран мазазан «%s».\nТеперь сделайте одну или несколько фотографий стеллажей с майонезами «Слобода»\n\n💡 Tip: упаковки должны быть хорошо видны' % msg[
                         'text'],
                     reply_markup=ReplyKeyboardRemove())
 
@@ -277,9 +278,15 @@ def onMessage(msg, chat_id, content_type):
         send((msg['text'] + " #%d") % count)
 
 
-def shop_button(shop):
+def shop_button(shop, shops):
     printf(shop)
-    kb = KeyboardButton(text=shop['name'])
+    matches = [x for x in shops if x['name'] == shop['name']]
+    if len(matches) != 1:
+        name = '%s (%s)' % shop['name']
+    else:
+        name = shop['name']
+
+    kb = KeyboardButton(text=name)
     printf(kb)
     return kb
 
