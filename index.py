@@ -127,7 +127,7 @@ def initial_user(data):
     return user
 
 
-def getFileLInk(file):
+def getFileLink(file):
     file_ = bot.getFile(file)
     return 'https://api.telegram.org/file/bot%s/%s' % (TOKEN, file_['file_path'])
 
@@ -195,9 +195,12 @@ def onMessage(msg, chat_id, content_type):
                  msg['from']['first_name'])
 
     elif stage == 'geolocation':
-        if content_type == 'location':
+        if content_type == 'location' or (content_type == 'text' and msg['text'].startswith('/sample')):
             send('🙏 Спасибо! Сейчас уточним магазин...')
-            location = msg['location']
+            if content_type == 'location':
+                location = msg['location']
+            else:
+                location = {'latitude': 55.758524, 'longitude': 37.658760}
             try:
                 url = '%s/geo?latitude=%f&longitude=%f' % (
                     API_ORIGIN, location['latitude'], location['longitude'])
@@ -254,10 +257,19 @@ def onMessage(msg, chat_id, content_type):
                 send(reply_text % shop['name'], reply_markup=[[ KeyboardButton(text='Закончить') ]])
 
     elif stage == 'photos_upload':
-        if content_type == 'photo' or (content_type == 'document' and msg['document']['mime_type'].startswith('image/')):
-            photo = msg['photo'][-1] if content_type == 'photo' else msg['document']
+        if content_type == 'photo' or (content_type == 'document' and msg['document']['mime_type'].startswith('image/')) or \
+                    (content_type == 'text' and msg['text'].startswith('/sample')):
+            if content_type == 'photo':
+                photo = msg['photo'][-1]
+            elif content_type == 'document':
+                photo = msg['document']
+            else:
+                photo = None
             try:
-                source_photo_path = getFileLInk(photo['file_id'])
+                if photo is not None:
+                    source_photo_path = getFileLink(photo['file_id'])
+                else:
+                    source_photo_path = 'http://lonthra.kalan.cc/photo_2018-12-09_20-29-35.jpg'
                 printf('source_photo_path:')
                 printf(source_photo_path)
                 photo_path = '%s/%s.jpg' % (PHOTOS_URL_PATH, photo['file_id'])
