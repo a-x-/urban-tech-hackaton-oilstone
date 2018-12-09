@@ -51,15 +51,13 @@ STAGES = {
     'photos_upload': 'photos_upload',
 }
 
-
-count = 0
 users = {}  # todo
 # users = {147445817: {
 #     'id': 147445817, 'priority': 1, 'stage': 'photos_upload', 'stage_data': None, 'photos': [], 'shop_id': 27}
 # }
 
 
-class handler(BaseHTTPRequestHandler):
+class server_handler(BaseHTTPRequestHandler):
 
     def do_PATCH(self):
         try:
@@ -90,9 +88,13 @@ class handler(BaseHTTPRequestHandler):
                 }[json['status']]
 
                 if len(users[user_id]['photos']) > 1:
-                    bot.sendMessage(user_id, 'Фото №%d %s' % (i + 1, human_status))
+                    bot.sendMessage(user_id, 'Фото №%d %s' % (i + 1, human_status), reply_markup=[[
+                        KeyboardButton(text='Закончить')
+                    ]])
                 else:
-                    bot.sendMessage(user_id, 'Фото %s' % human_status)
+                    bot.sendMessage(user_id, 'Фото %s' % human_status, reply_markup=[[
+                        KeyboardButton(text='Закончить')
+                    ]])
             else:
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
@@ -173,7 +175,7 @@ def gen_task_id(user, file_id):
 
 
 def onMessage(msg, chat_id, content_type):
-    global users, count
+    global users
 
     def send(text, reply_markup=ReplyKeyboardRemove()):
         return bot.sendMessage(chat_id, text, reply_markup=reply_markup)
@@ -246,12 +248,10 @@ def onMessage(msg, chat_id, content_type):
                 id = shop['shop_id']
                 users[chat_id]['shop_id'] = id
                 set_stage('photos_upload')
-                send(
-                    '🤳 Отлично! Выбран мазазан «%s».\nТеперь сделайте одну или несколько фотографий стеллажей с майонезами «Слобода»\n\n💡 Tip: упаковки должны быть хорошо видны'
-                        % shop['name'],
-                    reply_markup=[[
-                        KeyboardButton(text='Закончить')
-                    ]])
+                reply_text = ('🤳 Отлично! Выбран мазазан «%s».\n'
+                    'Теперь сделайте одну или несколько фотографий стеллажей с майонезами «Слобода»\n\n'
+                    '💡 Tip: упаковки должны быть хорошо видны')
+                send(reply_text % shop['name'], reply_markup=[[ KeyboardButton(text='Закончить') ]])
 
     elif stage == 'photos_upload':
         if content_type == 'photo' or (content_type == 'document' and msg['document']['mime_type'].startswith('image/')):
@@ -288,10 +288,6 @@ def onMessage(msg, chat_id, content_type):
         else:
             send('Okay... но нужна фотография витрины с майонезами «Слобода»')
 
-    else:
-        count += 1
-        send((msg['text'] + " #%d") % count)
-
 
 def shop_button(i, shop, shops):
     human_i = i + 1
@@ -308,7 +304,7 @@ def shop_button(i, shop, shops):
 
 
 def handle(msg):
-    global count, users
+    global users
     content_type, chat_type, chat_id = telepot.glance(msg)
     printf(content_type, chat_type, chat_id)
     printf(msg)
@@ -330,5 +326,5 @@ MessageLoop(bot, handle).run_as_thread()
 
 
 printf('start localhost:%s' % PORT)
-serv = HTTPServer(("localhost", PORT), handler)
+serv = HTTPServer(("localhost", PORT), server_handler)
 serv.serve_forever()
