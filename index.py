@@ -274,7 +274,7 @@ def onMessage(msg, chat_id, content_type):
                 elif content_type == 'document':
                     photo = msg['document']
                 else:
-                    photo = {'file_id': '0'}
+                    photo = {'file_id': 'BQADAgADigMAAtc7aEjbIuRo9U82mQI'}
                 try:
                     if photo is not None:
                         source_photo_path = getFileLink(photo['file_id'])
