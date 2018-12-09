@@ -29,6 +29,10 @@ def printf(*args):
     print(*args, flush=True)
 
 
+def kb(buttons):
+    return ReplyKeyboardMarkup(keyboard=buttons)
+
+
 printf('setup')
 
 
@@ -89,13 +93,13 @@ class server_handler(BaseHTTPRequestHandler):
                 }[json['status']]
 
                 if len(users[user_id]['photos']) > 1:
-                    bot.sendMessage(user_id, 'Фото №%d %s' % (i + 1, human_status), reply_markup=[[
+                    bot.sendMessage(user_id, 'Фото №%d %s' % (i + 1, human_status), reply_markup=kb([[
                         KeyboardButton(text='Закончить')
-                    ]])
+                    ]]))
                 else:
-                    bot.sendMessage(user_id, 'Фото %s' % human_status, reply_markup=[[
+                    bot.sendMessage(user_id, 'Фото %s' % human_status, reply_markup=kb([[
                         KeyboardButton(text='Закончить')
-                    ]])
+                    ]]))
             else:
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
@@ -126,7 +130,6 @@ def initial_user(data):
     }
     user.update(data)
     return user
-
 
 def getFileLink(file):
     file_ = bot.getFile(file)
@@ -217,10 +220,9 @@ def onMessage(msg, chat_id, content_type):
                         shops = r.json()
                         set_stage('shop_select', data={'shops': shops})
 
-                        keyboard = ReplyKeyboardMarkup(
-                            keyboard=[shop_button(i, shop, shops) for i, shop in enumerate(shops)] + [[
-                                KeyboardButton(text='Отменить')
-                            ]])
+                        keyboard = kb([shop_button(i, shop, shops) for i, shop in enumerate(shops)] + [[
+                            KeyboardButton(text='Отменить')
+                        ]])
 
                         send('Выберите магазин в котором вы находитесь',
                              reply_markup=keyboard)
@@ -259,11 +261,10 @@ def onMessage(msg, chat_id, content_type):
                     id = shop['shop_id']
                     users[chat_id]['shop_id'] = id
                     set_stage('photos_upload')
-                    reply_text = ('🤳 Отлично! Выбран мазазан «%s».\n'
+                    reply_text = ('🤳 Отлично! Выбран магазин «%s».\n'
                                   'Теперь сделайте одну или несколько фотографий стеллажей с майонезами «Слобода»\n\n'
                                   '💡 Tip: упаковки должны быть хорошо видны')
-                    send(reply_text % shop['name'], reply_markup=[
-                         [KeyboardButton(text='Закончить')]])
+                    send(reply_text % shop['name'], reply_markup=kb([[KeyboardButton(text='Закончить')]]))
 
         elif stage == 'photos_upload':
             if content_type == 'photo' or (content_type == 'document' and msg['document']['mime_type'].startswith('image/')) or \
