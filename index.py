@@ -12,6 +12,7 @@ import urllib.parse as urlparse
 from json import dumps as json_dump
 from json import loads as json_parse
 from random import randint
+import traceback
 
 import telepot
 from telepot.loop import MessageLoop
@@ -102,7 +103,7 @@ class server_handler(BaseHTTPRequestHandler):
                 message = cow.Cowacter().milk('Hello from OilStone chatBot!1111111')
                 self.wfile.write(message.encode())
         except Exception as e:
-            printf(e)
+            printf(traceback.format_exc())
 
             self.send_response(500)
             self.send_header('Content-type', 'application/json')
@@ -193,8 +194,10 @@ def onMessage(msg, chat_id, content_type):
         if stage == 'initial':
             if content_type == 'text' and msg['text'].startswith('/start'):
                 set_stage('geolocation')
-                send('📍 Здравствуйте, %s! Хотите заработать на походах в магазин?\nОтправьте геолокацию, чтобы определить магазин.\n\n💡 Tip: кнопка слева от текстового поля' %
-                    msg['from']['first_name'])
+                reply_text = ('📍 Здравствуйте, %s! Хотите заработать на походах в магазин?'
+                    '\nОтправьте геолокацию, чтобы определить магазин.\n\n'
+                    '💡 Tip: кнопка слева от текстового поля')
+                send(reply_text % msg['from']['first_name'])
 
         elif stage == 'geolocation':
             if content_type == 'location' or (content_type == 'text' and msg['text'].startswith('/sample')):
@@ -220,20 +223,23 @@ def onMessage(msg, chat_id, content_type):
                             ]])
 
                         send('Выберите магазин в котором вы находитесь',
-                            reply_markup=keyboard)
+                             reply_markup=keyboard)
                         # todo: if count == 1 then auto_select
                     else:
                         send('😰 Упс! %s.\n\nПопробуем ещё раз через минутку?' %
-                            r.json()['error'])
+                             r.json()['error'])
                 except RequestException as e:
                     printf('RequestException')
-                    printf(e)
-                    send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
+                    printf(traceback.format_exc())
+                    send(
+                        '😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
                 except Exception as e:
-                    printf(e)
-                    send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
+                    printf(traceback.format_exc())
+                    send(
+                        '😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
             else:
-                send('Okay... но нужна геолокация, без неё не получится определить магазин, в которов вы находитесь')
+                send(
+                    'Okay... но нужна геолокация, без неё не получится определить магазин, в которов вы находитесь')
 
         elif stage == 'shop_select':
             if content_type == 'text':
@@ -254,13 +260,14 @@ def onMessage(msg, chat_id, content_type):
                     users[chat_id]['shop_id'] = id
                     set_stage('photos_upload')
                     reply_text = ('🤳 Отлично! Выбран мазазан «%s».\n'
-                        'Теперь сделайте одну или несколько фотографий стеллажей с майонезами «Слобода»\n\n'
-                        '💡 Tip: упаковки должны быть хорошо видны')
-                    send(reply_text % shop['name'], reply_markup=[[ KeyboardButton(text='Закончить') ]])
+                                  'Теперь сделайте одну или несколько фотографий стеллажей с майонезами «Слобода»\n\n'
+                                  '💡 Tip: упаковки должны быть хорошо видны')
+                    send(reply_text % shop['name'], reply_markup=[
+                         [KeyboardButton(text='Закончить')]])
 
         elif stage == 'photos_upload':
             if content_type == 'photo' or (content_type == 'document' and msg['document']['mime_type'].startswith('image/')) or \
-                        (content_type == 'text' and msg['text'].startswith('/sample')):
+                    (content_type == 'text' and msg['text'].startswith('/sample')):
                 if content_type == 'photo':
                     photo = msg['photo'][-1]
                 elif content_type == 'document':
@@ -274,26 +281,30 @@ def onMessage(msg, chat_id, content_type):
                         source_photo_path = 'http://lonthra.kalan.cc/photo_2018-12-09_20-29-35.jpg'
                     printf('source_photo_path:')
                     printf(source_photo_path)
-                    photo_path = '%s/%s.jpg' % (PHOTOS_URL_PATH, photo['file_id'])
+                    photo_path = '%s/%s.jpg' % (PHOTOS_URL_PATH,
+                                                photo['file_id'])
                     save_photo(source_photo_path, '%s%s' %
-                            (PHOTOS_LOCAL_DIR, photo_path))
+                               (PHOTOS_LOCAL_DIR, photo_path))
                     r = start_processing(users[chat_id], photo['file_id'], '%s%s' % (
                         PHOTOS_URL_ORIGIN, photo_path))
 
                     if r.status_code == 200 or r.status_code == 201:
-                        send('🌈 Класс! Обрабатываем.\n📸 Сделайте ещё одну/несколько фотографий\nили подождите секундочку')
+                        send(
+                            '🌈 Класс! Обрабатываем.\n📸 Сделайте ещё одну/несколько фотографий\nили подождите секундочку')
 
                     else:
                         send('😰 Упс! %s.\n\nПопробуем ещё раз через минутку?' %
-                            r.json()['error'])
+                             r.json()['error'])
 
                 except RequestException as e:
                     printf('RequestException')
-                    printf(e)
-                    send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
+                    printf(traceback.format_exc())
+                    send(
+                        '😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
                 except Exception as e:
-                    printf(e)
-                    send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
+                    printf(traceback.format_exc())
+                    send(
+                        '😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
 
             elif content_type == 'text' and msg['text'] == 'Закончить':
                 set_stage('initial')
@@ -303,7 +314,7 @@ def onMessage(msg, chat_id, content_type):
                 send('Okay... но нужна фотография витрины с майонезами «Слобода»')
 
     except Exception as e:
-        printf(e)
+        printf(traceback.format_exc())
         send('😰 Упс! Что-то совсем пошло не так.\n\nПопробуем ещё раз через минутку?')
 
 
