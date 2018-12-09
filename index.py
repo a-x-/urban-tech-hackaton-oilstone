@@ -21,6 +21,11 @@ from cowpy import cow
 with open('pid', 'w') as pid_file:
     pid_file.write('%d\n' % os.getpid())
 
+
+def printf(*args):
+    print(*args, flush=True)
+
+
 printf('setup')
 
 
@@ -50,10 +55,6 @@ users = {} # todo
 # users = {147445817: {
 #     'id': 147445817, 'priority': 1, 'stage': 'photos_upload', 'stage_data': None, 'photos': [], 'shop_id': 27}
 # }
-
-
-def printf(*args):
-    print(*args, flush=True)
 
 
 class handler(BaseHTTPRequestHandler):
