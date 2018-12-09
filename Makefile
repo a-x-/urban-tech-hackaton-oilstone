@@ -7,12 +7,14 @@ all:
 deploy: all
 
 restart:
-	echo RESTART
+	@echo RESTART
 	echo $${token}
 	pwd
 	kill -15 $$(cat ./pid); token=$${token} make start
 
 start:
-	echo START
+	@echo START
 	echo $${token}
 	tmux new -d './index.py $${token} >log 2>error_log'
+	@sleep 2
+	cat log error_log

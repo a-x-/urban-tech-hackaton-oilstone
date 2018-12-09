@@ -30,7 +30,7 @@ class handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
-        if self.path.startswith('/task'):
+        if self.path.startswith('/bot/task'):
             printf('<< server', self.path, 'method', self.command)
         message = cow.Cowacter().milk('Hello from OilStone chatBot!1111111')
         self.wfile.write(message.encode())
