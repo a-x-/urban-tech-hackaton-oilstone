@@ -51,7 +51,7 @@ STAGES = {
 
 
 count = 0
-users = {} # todo
+users = {}  # todo
 # users = {147445817: {
 #     'id': 147445817, 'priority': 1, 'stage': 'photos_upload', 'stage_data': None, 'photos': [], 'shop_id': 27}
 # }
@@ -82,11 +82,16 @@ class handler(BaseHTTPRequestHandler):
                 printf('photo', task, i, json['status'])
 
                 human_status = {
-                    'processed': 'Успешно обработано, баллы начислены! ❤️',
-                    'error': 'не получилось обработать ¯\_(ツ)_/¯',
+                    'processed': 'успешно обработано, баллы начислены! ❤️',
+                    'error': 'какое-то не такое. ¯\_(ツ)_/¯\n😞 Попробуем ещё разок?',
                     'processing': 'ещё обрабатывается',
                 }[json['status']]
-                bot.sendMessage(user_id, 'Фото №%d %s' % (i + 1, human_status))
+
+                if len(users[user_id]['photos']) > 1:
+                    bot.sendMessage(user_id, 'Фото №%d %s' % (i + 1, human_status))
+                else:
+                    bot.sendMessage(user_id, 'Фото %s' %
+                                    (i + 1, human_status))
             else:
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
@@ -159,6 +164,7 @@ def start_processing(user, file_id, photo_path):
     r = requests.post('%s/task' % API_ORIGIN, query)
     printf('task inited')
     printf(r, r.json(), r.status_code)
+    return r
 
 
 def gen_task_id(user, file_id):
@@ -247,10 +253,16 @@ def onMessage(msg, chat_id, content_type):
                 photo_path = '%s/%s.jpg' % (PHOTOS_URL_PATH, photo['file_id'])
                 save_photo(source_photo_path, '%s%s' %
                            (PHOTOS_LOCAL_DIR, photo_path))
-                start_processing(users[chat_id], photo['file_id'], '%s%s' % (
+                r = start_processing(users[chat_id], photo['file_id'], '%s%s' % (
                     PHOTOS_URL_ORIGIN, photo_path))
-                send(
-                    '🌈 Класс! Уже обрабатываем фотку.\n📸 Сделайте ещё одну или несколько фотографий или ожидайте результат')
+
+                if r.status_code == 200 or r.status_code == 201:
+                    send('🌈 Класс! Обрабатываем.\n📸 Сделайте ещё одну/несколько фотографий\nили подождите секундочку')
+
+                else:
+                    send('😰 Упс! %s.\n\nПопробуем ещё раз через минутку?' %
+                         r.json()['error'])
+
             except RequestException as e:
                 printf('RequestException')
                 printf(e)
