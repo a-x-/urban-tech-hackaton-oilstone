@@ -186,7 +186,7 @@ def onMessage(msg, chat_id, content_type):
     printf("stage: %s" % stage)
 
     if stage == 'initial':
-        if content_type == 'text' and msg['text'].startsswith('/start'):
+        if content_type == 'text' and msg['text'].startswith('/start'):
             set_stage('geolocation')
             send('📍 Здравствуйте, %s! Хотите заработать на походах в магазин?\nОтправьте геолокацию, чтобы определить магазин.\n\n💡 Tip: кнопка слева от текстового поля' %
                  msg['from']['first_name'])
