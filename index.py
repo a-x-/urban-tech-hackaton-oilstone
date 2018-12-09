@@ -188,117 +188,123 @@ def onMessage(msg, chat_id, content_type):
 
     printf("stage: %s" % stage)
 
-    if stage == 'initial':
-        if content_type == 'text' and msg['text'].startswith('/start'):
-            set_stage('geolocation')
-            send('📍 Здравствуйте, %s! Хотите заработать на походах в магазин?\nОтправьте геолокацию, чтобы определить магазин.\n\n💡 Tip: кнопка слева от текстового поля' %
-                 msg['from']['first_name'])
+    try:
 
-    elif stage == 'geolocation':
-        if content_type == 'location' or (content_type == 'text' and msg['text'].startswith('/sample')):
-            send('🙏 Спасибо! Сейчас уточним магазин...')
-            if content_type == 'location':
-                location = msg['location']
-            else:
-                location = {'latitude': 55.758524, 'longitude': 37.658760}
-            try:
-                url = '%s/geo?latitude=%f&longitude=%f' % (
-                    API_ORIGIN, location['latitude'], location['longitude'])
-                printf('url', url)
-                r = requests.get(url)
-                printf(r, r.json(), r.status_code)
-                if r.status_code == 200 or r.status_code == 201:
-                    # shops = [ {'shop_id': 42, 'name': 'Пятёра'}, ]
-                    shops = r.json()
-                    set_stage('shop_select', data={'shops': shops})
+        if stage == 'initial':
+            if content_type == 'text' and msg['text'].startswith('/start'):
+                set_stage('geolocation')
+                send('📍 Здравствуйте, %s! Хотите заработать на походах в магазин?\nОтправьте геолокацию, чтобы определить магазин.\n\n💡 Tip: кнопка слева от текстового поля' %
+                    msg['from']['first_name'])
 
-                    keyboard = ReplyKeyboardMarkup(
-                        keyboard=[shop_button(i, shop, shops) for i, shop in enumerate(shops)] + [[
-                            KeyboardButton(text='Отменить')
-                        ]])
-
-                    send('Выберите магазин в котором вы находитесь',
-                         reply_markup=keyboard)
-                    # todo: if count == 1 then auto_select
+        elif stage == 'geolocation':
+            if content_type == 'location' or (content_type == 'text' and msg['text'].startswith('/sample')):
+                send('🙏 Спасибо! Сейчас уточним магазин...')
+                if content_type == 'location':
+                    location = msg['location']
                 else:
-                    send('😰 Упс! %s.\n\nПопробуем ещё раз через минутку?' %
-                         r.json()['error'])
-            except RequestException as e:
-                printf('RequestException')
-                printf(e)
-                send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
-            except Exception as e:
-                printf(e)
-                send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
-        else:
-            send('Okay... но нужна геолокация, без неё не получится определить магазин, в которов вы находитесь')
+                    location = {'latitude': 55.758524, 'longitude': 37.658760}
+                try:
+                    url = '%s/geo?latitude=%f&longitude=%f' % (
+                        API_ORIGIN, location['latitude'], location['longitude'])
+                    printf('url', url)
+                    r = requests.get(url)
+                    printf(r, r.json(), r.status_code)
+                    if r.status_code == 200 or r.status_code == 201:
+                        # shops = [ {'shop_id': 42, 'name': 'Пятёра'}, ]
+                        shops = r.json()
+                        set_stage('shop_select', data={'shops': shops})
 
-    elif stage == 'shop_select':
-        if content_type == 'text':
-            shops = users[chat_id]['stage_data']['shops']
-            printf('shops', shops)
-            if msg['text'] == 'Отменить':
+                        keyboard = ReplyKeyboardMarkup(
+                            keyboard=[shop_button(i, shop, shops) for i, shop in enumerate(shops)] + [[
+                                KeyboardButton(text='Отменить')
+                            ]])
+
+                        send('Выберите магазин в котором вы находитесь',
+                            reply_markup=keyboard)
+                        # todo: if count == 1 then auto_select
+                    else:
+                        send('😰 Упс! %s.\n\nПопробуем ещё раз через минутку?' %
+                            r.json()['error'])
+                except RequestException as e:
+                    printf('RequestException')
+                    printf(e)
+                    send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
+                except Exception as e:
+                    printf(e)
+                    send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
+            else:
+                send('Okay... но нужна геолокация, без неё не получится определить магазин, в которов вы находитесь')
+
+        elif stage == 'shop_select':
+            if content_type == 'text':
+                shops = users[chat_id]['stage_data']['shops']
+                printf('shops', shops)
+                if msg['text'] == 'Отменить':
+                    set_stage('initial')
+                    send('Ок. Чтобы повторить снова напишите /start ;-)')
+                    return
+
+                match = re.search('^\\d+', msg['text'])
+                if not match:
+                    send(
+                        '😬 Нужно название мазазина из найденных вариантов,\nесли не нашёлся нужный — Сорян :(')
+                else:
+                    shop = shops[int(match.group(0)) - 1]
+                    id = shop['shop_id']
+                    users[chat_id]['shop_id'] = id
+                    set_stage('photos_upload')
+                    reply_text = ('🤳 Отлично! Выбран мазазан «%s».\n'
+                        'Теперь сделайте одну или несколько фотографий стеллажей с майонезами «Слобода»\n\n'
+                        '💡 Tip: упаковки должны быть хорошо видны')
+                    send(reply_text % shop['name'], reply_markup=[[ KeyboardButton(text='Закончить') ]])
+
+        elif stage == 'photos_upload':
+            if content_type == 'photo' or (content_type == 'document' and msg['document']['mime_type'].startswith('image/')) or \
+                        (content_type == 'text' and msg['text'].startswith('/sample')):
+                if content_type == 'photo':
+                    photo = msg['photo'][-1]
+                elif content_type == 'document':
+                    photo = msg['document']
+                else:
+                    photo = {'file_id': '0'}
+                try:
+                    if photo is not None:
+                        source_photo_path = getFileLink(photo['file_id'])
+                    else:
+                        source_photo_path = 'http://lonthra.kalan.cc/photo_2018-12-09_20-29-35.jpg'
+                    printf('source_photo_path:')
+                    printf(source_photo_path)
+                    photo_path = '%s/%s.jpg' % (PHOTOS_URL_PATH, photo['file_id'])
+                    save_photo(source_photo_path, '%s%s' %
+                            (PHOTOS_LOCAL_DIR, photo_path))
+                    r = start_processing(users[chat_id], photo['file_id'], '%s%s' % (
+                        PHOTOS_URL_ORIGIN, photo_path))
+
+                    if r.status_code == 200 or r.status_code == 201:
+                        send('🌈 Класс! Обрабатываем.\n📸 Сделайте ещё одну/несколько фотографий\nили подождите секундочку')
+
+                    else:
+                        send('😰 Упс! %s.\n\nПопробуем ещё раз через минутку?' %
+                            r.json()['error'])
+
+                except RequestException as e:
+                    printf('RequestException')
+                    printf(e)
+                    send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
+                except Exception as e:
+                    printf(e)
+                    send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
+
+            elif content_type == 'text' and msg['text'] == 'Закончить':
                 set_stage('initial')
                 send('Ок. Чтобы повторить снова напишите /start ;-)')
-                return
 
-            match = re.search('^\\d+', msg['text'])
-            if not match:
-                send(
-                    '😬 Нужно название мазазина из найденных вариантов,\nесли не нашёлся нужный — Сорян :(')
             else:
-                shop = shops[int(match.group(0)) - 1]
-                id = shop['shop_id']
-                users[chat_id]['shop_id'] = id
-                set_stage('photos_upload')
-                reply_text = ('🤳 Отлично! Выбран мазазан «%s».\n'
-                    'Теперь сделайте одну или несколько фотографий стеллажей с майонезами «Слобода»\n\n'
-                    '💡 Tip: упаковки должны быть хорошо видны')
-                send(reply_text % shop['name'], reply_markup=[[ KeyboardButton(text='Закончить') ]])
+                send('Okay... но нужна фотография витрины с майонезами «Слобода»')
 
-    elif stage == 'photos_upload':
-        if content_type == 'photo' or (content_type == 'document' and msg['document']['mime_type'].startswith('image/')) or \
-                    (content_type == 'text' and msg['text'].startswith('/sample')):
-            if content_type == 'photo':
-                photo = msg['photo'][-1]
-            elif content_type == 'document':
-                photo = msg['document']
-            else:
-                photo = {'file_id': '0'}
-            try:
-                if photo is not None:
-                    source_photo_path = getFileLink(photo['file_id'])
-                else:
-                    source_photo_path = 'http://lonthra.kalan.cc/photo_2018-12-09_20-29-35.jpg'
-                printf('source_photo_path:')
-                printf(source_photo_path)
-                photo_path = '%s/%s.jpg' % (PHOTOS_URL_PATH, photo['file_id'])
-                save_photo(source_photo_path, '%s%s' %
-                           (PHOTOS_LOCAL_DIR, photo_path))
-                r = start_processing(users[chat_id], photo['file_id'], '%s%s' % (
-                    PHOTOS_URL_ORIGIN, photo_path))
-
-                if r.status_code == 200 or r.status_code == 201:
-                    send('🌈 Класс! Обрабатываем.\n📸 Сделайте ещё одну/несколько фотографий\nили подождите секундочку')
-
-                else:
-                    send('😰 Упс! %s.\n\nПопробуем ещё раз через минутку?' %
-                         r.json()['error'])
-
-            except RequestException as e:
-                printf('RequestException')
-                printf(e)
-                send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
-            except Exception as e:
-                printf(e)
-                send('😰 Упс! Что-то пошло не так.\n\nПопробуем ещё раз через минутку?')
-
-        elif content_type == 'text' and msg['text'] == 'Закончить':
-            set_stage('initial')
-            send('Ок. Чтобы повторить снова напишите /start ;-)')
-
-        else:
-            send('Okay... но нужна фотография витрины с майонезами «Слобода»')
+    except Exception as e:
+        printf(e)
+        send('😰 Упс! Что-то совсем пошло не так.\n\nПопробуем ещё раз через минутку?')
 
 
 def shop_button(i, shop, shops):
