@@ -2,7 +2,7 @@ all:
 	git pull origin master
 	git push
 	echo $${token}
-	ssh root@37.139.30.202 "cd /var/www/uiguy.ru/oil-stone-urban-hackaton/repo && git pull && token=$${token} make restart"
+	ssh -A root@37.139.30.202 "cd /var/www/uiguy.ru/oil-stone-urban-hackaton/repo && git pull && token=$${token} make restart"
 
 deploy: all
 
