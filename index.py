@@ -7,6 +7,9 @@ import os
 import sys
 import requests
 from requests.exceptions import RequestException
+import urllib.parse as urlparse
+from json import dumps as json_dump
+from json import loads as json_parse
 
 import telepot
 from telepot.loop import MessageLoop
@@ -18,27 +21,7 @@ from cowpy import cow
 with open('pid', 'w') as pid_file:
     pid_file.write('%d\n' % os.getpid())
 
-
-def printf(*args):
-    print(*args, flush=True)
-
-
-class handler(BaseHTTPRequestHandler):
-
-    def do_GET(self):
-        self.log_request()
-        self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
-        if self.path.startswith('/bot/task'):
-            printf('<< server', self.path, 'method',
-                self.command, self.request.GET.get('user_id'))
-            user_id = urlparse(self.path).query
-            bot.sendMessage(user_id, 'Пришёл результат по фотке'
-            self.wfile.write('{ok: true}'.encode())
-        else:
-            message = cow.Cowacter().milk('Hello from OilStone chatBot!1111111')
-            self.wfile.write(message.encode())
+printf('setup')
 
 
 TOKEN = sys.argv[1]  # get token from command-line
@@ -61,10 +44,65 @@ STAGES = {
     'photos_upload': 'photos_upload',
 }
 
-printf('setup')
 
 count = 0
-users = {}
+users = {} # todo
+# users = {147445817: {
+#     'id': 147445817, 'priority': 1, 'stage': 'photos_upload', 'stage_data': None, 'photos': [], 'shop_id': 27}
+# }
+
+
+def printf(*args):
+    print(*args, flush=True)
+
+
+class handler(BaseHTTPRequestHandler):
+
+    def do_PATCH(self):
+        try:
+            self.log_request()
+            query = urlparse.parse_qs(urlparse.splitquery(self.path)[1])
+            if self.path.startswith('/bot/task'):
+                printf('<< server', self.path, 'method', self.command, query)
+                [user_id, task_id] = [
+                    int(query['user_id'][0]), query['task_id'][0]]
+                json = json_parse(self.rfile.read(
+                    int(self.headers['Content-Length'])))
+                printf('json', json, 'user', users[user_id]['photos'])
+
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json_dump({'ok': True}).encode())
+
+                (task, i) = [(x, i) for i, x in enumerate(
+                    users[user_id]['photos']) if x['task_id'] == task_id][0]
+
+                printf('photo', task, i, json['status'])
+
+                human_status = {
+                    'processed': 'Успешно обработано, баллы начислены! ❤️',
+                    'error': 'не получилось обработать ¯\_(ツ)_/¯',
+                    'processing': 'ещё обрабатывается',
+                }[json['status']]
+                bot.sendMessage(user_id, 'Фото №%d %s' % (i + 1, human_status))
+            else:
+                self.send_response(200)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                message = cow.Cowacter().milk('Hello from OilStone chatBot!1111111')
+                self.wfile.write(message.encode())
+        except Exception as e:
+            printf(e)
+
+            self.send_response(500)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json_dump({'error': str(e)}).encode())
+
+    def do_GET(self):
+        message = cow.Cowacter().milk('Hello from OilStone chatBot!1111111')
+        self.wfile.write(message.encode())
 
 
 def initial_user(data):
@@ -89,6 +127,11 @@ def save_photo(source_photo_path, photo_path):
     os.system('curl "%s" > %s' % (source_photo_path, photo_path))
 
 
+def add_user_photo(task):
+    users[task['user_id']]['photos'].append(
+        {'photo_path': task['photo_path'], 'task_id': task['task_id']})
+
+
 def start_processing(user, file_id, photo_path):
     task = {}
     task.update(user)
@@ -98,7 +141,7 @@ def start_processing(user, file_id, photo_path):
         'photo_path': photo_path,
     })
 
-    # todo: add_user_photo({photo_path, task_id}) # users[chat_id].photos.push({ photo_path, task_id })
+    add_user_photo(task)
 
     # http -vj POST 'http://37.228.118.11:8080/task?task_id=42&priority=2&photo_path=https://invntrm.ru/path/to/img.jpg&user_id=147445817&shop_id=423'
 
