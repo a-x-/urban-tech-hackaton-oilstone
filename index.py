@@ -194,13 +194,12 @@ def onMessage(msg, chat_id, content_type):
 
     try:
 
-        if stage == 'initial':
-            if content_type == 'text' and msg['text'].startswith('/start'):
-                set_stage('geolocation')
-                reply_text = ('📍 Здравствуйте, %s! Хотите заработать на походах в магазин?'
-                    '\nОтправьте геолокацию, чтобы определить магазин.\n\n'
-                    '💡 Tip: кнопка слева от текстового поля')
-                send(reply_text % msg['from']['first_name'])
+        if stage == 'initial' or (content_type == 'text' and msg['text'].startswith('/start')):
+            set_stage('geolocation')
+            reply_text = ('📍 Здравствуйте, %s! Хотите заработать на походах в магазин?'
+                '\nОтправьте геолокацию, чтобы определить магазин.\n\n'
+                '💡 Tip: кнопка слева от текстового поля')
+            send(reply_text % msg['from']['first_name'])
 
         elif stage == 'geolocation':
             if content_type == 'location' or (content_type == 'text' and msg['text'].startswith('/sample')):
