@@ -282,7 +282,7 @@ def shop_button(shop, shops):
     printf(shop)
     matches = [x for x in shops if x['name'] == shop['name']]
     if len(matches) != 1:
-        name = '%s (%s)' % shop['name']
+        name = '%s (%s)' % (shop['name'], shop['shop_address'])
     else:
         name = shop['name']
 
