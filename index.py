@@ -31,10 +31,14 @@ class handler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
         if self.path.startswith('/bot/task'):
-            printf('<< server', self.path, 'method', self.command)
-        message = cow.Cowacter().milk('Hello from OilStone chatBot!1111111')
-        self.wfile.write(message.encode())
-        return
+            printf('<< server', self.path, 'method',
+                self.command, self.request.GET.get('user_id'))
+            user_id = urlparse(self.path).query
+            bot.sendMessage(user_id, 'Пришёл результат по фотке'
+            self.wfile.write('{ok: true}'.encode())
+        else:
+            message = cow.Cowacter().milk('Hello from OilStone chatBot!1111111')
+            self.wfile.write(message.encode())
 
 
 TOKEN = sys.argv[1]  # get token from command-line
