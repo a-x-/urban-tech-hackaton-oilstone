@@ -3,7 +3,6 @@
 
 import os
 import sys
-import urllib
 import requests
 from requests.exceptions import RequestException
 
@@ -26,8 +25,7 @@ class handler(BaseHTTPRequestHandler):
         return
 
 
-# TOKEN = sys.argv[1]  # get token from command-line
-TOKEN = "778814536:AAGZp7325xBl2fb73PgAI7bQTYfV9Ao44sk"
+TOKEN = sys.argv[1]  # get token from command-line
 SUPER_USERS = [
     147445817,  # alex
     164228786,  # oleg
@@ -103,19 +101,14 @@ def start_processing(user, file_id, photo_path):
 
     # http -vj POST 'http://37.228.118.11:8080/task?task_id=42&priority=2&photo_path=https://invntrm.ru/path/to/img.jpg&user_id=147445817&shop_id=423'
 
-    r = requests.post('%s/task?\
-      task_id=%s&\
-      priority=%d&\
-      photo_path=%s&\
-      user_id=%d&\
-      shop_id=%d' % (
-        API_ORIGIN,
-        task['task_id'],
-        task['priority'],
-        task['photo_path'],
-        task['user_id'],
-        task['shop_id'],
-    ))
+    query = {key: task[key] for key in [
+        'task_id'
+        'priority'
+        'photo_path'
+        'user_id'
+        'shop_id'
+    ]}
+    r = requests.post('%s/task' % API_ORIGIN, query)
     print('task inited')
     print(r, r.json(), r.status_code)
 
