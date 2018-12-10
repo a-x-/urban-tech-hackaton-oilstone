@@ -127,6 +127,9 @@ class server_handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json_dump({'error': str(e)}).encode())
 
+    def do_POST(self):
+        self.wfile.write(b'')
+
     def do_GET(self):
         message = cow.Cowacter().milk('Hello from OilStone chatBot!1111111')
         self.wfile.write(message.encode())
