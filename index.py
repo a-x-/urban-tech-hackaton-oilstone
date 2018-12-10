@@ -224,6 +224,7 @@ def onMessage(msg, chat_id, content_type):
                     location = msg['location']
                 else:
                     location = {'latitude': 55.758524, 'longitude': 37.658760}
+                    send('Пример данных — координаты 55.758524,37.658760 (метро Курская)')
                 try:
                     url = '%s/geo?latitude=%f&longitude=%f' % (
                         API_ORIGIN, location['latitude'], location['longitude'])
@@ -296,6 +297,7 @@ def onMessage(msg, chat_id, content_type):
                     else:
                         source_photo_path = 'http://lonthra.kalan.cc/photo_2018-12-09_20-29-35.jpg'
                         photo = {'file_id': 'AAAAAAAAAAAAAAAAAAAAAAAAAsample'}
+                        bot.sendPhoto(chat_id, 'http://lonthra.kalan.cc/photo_2018-12-09_20-29-35.jpg', caption='Пример фотографии')
                     printf('source_photo_path:')
                     printf(source_photo_path)
                     photo_path = '%s/%s.jpg' % (PHOTOS_URL_PATH,
