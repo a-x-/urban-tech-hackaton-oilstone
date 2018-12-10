@@ -13,6 +13,7 @@ from json import dumps as json_dump
 from json import loads as json_parse
 from random import randint
 import traceback
+import io
 
 import telepot
 from telepot.loop import MessageLoop
@@ -107,8 +108,7 @@ class server_handler(BaseHTTPRequestHandler):
                     if 'text' in item:
                         bot.sendMessage(int(query['user_id'][0]), item['text'])
                     if 'photo_path' in item:
-                        print('sendPhoto:', repr((int(query['user_id'][0]), item['photo_path'])))
-                        bot.sendPhoto(int(query['user_id'][0]), item['photo_path'])
+                        bot.sendPhoto(int(query['user_id'][0]), io.BytesIO(requests.get(item['photo_path']).content))
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
