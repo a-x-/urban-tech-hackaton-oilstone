@@ -102,11 +102,16 @@ class server_handler(BaseHTTPRequestHandler):
                     ]]))
             elif self.path.startswith('/bot/debug'):
                 printf('<< DEBUG', self.path, 'method', self.command, query)
-                printf('<< << << << << ', self.rfile.read(int(self.headers['Content-Length'])))
+                data = json_parse(self.rfile.read(int(self.headers['Content-Length'])))
+                for item in data:
+                    if 'text' in item:
+                        bot.sendMessage(query['user_id'], item['text'])
+                    if 'photo_path' in item:
+                        bot.sendPhoto(query['user_id'][0], item['photo_path'])
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
-                self.wfile.write(b'')
+                self.wfile.write(json_dump({'ok': True}).encode())
             else:
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
