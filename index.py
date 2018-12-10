@@ -114,6 +114,19 @@ class server_handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json_dump({'error': str(e)}).encode())
 
+    def do_POST(self):
+        try:
+            self.log_request()
+            query = urlparse.parse_qs(urlparse.splitquery(self.path)[1])
+            print('>>>>>>>>>>>>>POST', self.path, self.rfile.read(int(self.headers['Content-Length'])))
+        except Exception as e:
+            printf(traceback.format_exc())
+
+            self.send_response(500)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json_dump({'error': str(e)}).encode())
+
     def do_GET(self):
         message = cow.Cowacter().milk('Hello from OilStone chatBot!1111111')
         self.wfile.write(message.encode())
