@@ -240,7 +240,7 @@ def onMessage(msg, chat_id, content_type):
                             KeyboardButton(text='Отменить')
                         ]])
 
-                        send('Выберите магазин в котором вы находитесь',
+                        send('Выберите магазин, в котором вы находитесь',
                              reply_markup=keyboard)
                         # todo: if count == 1 then auto_select
                     else:
