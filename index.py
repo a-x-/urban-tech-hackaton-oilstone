@@ -102,6 +102,7 @@ class server_handler(BaseHTTPRequestHandler):
                     ]]))
             elif self.path.startswith('/bot/debug'):
                 printf('<< DEBUG', self.path, 'method', self.command, query)
+                printf('<< << << << << ', self.rfile.read(int(self.headers['Content-Length'])))
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
