@@ -107,8 +107,8 @@ class server_handler(BaseHTTPRequestHandler):
                     if 'text' in item:
                         bot.sendMessage(int(query['user_id'][0]), item['text'])
                     if 'photo_path' in item:
-                        bot.sendPhoto(int(query['user_id'][0]), item['photo_path'])
                         print('sendPhoto:', repr((int(query['user_id'][0]), item['photo_path'])))
+                        bot.sendPhoto(int(query['user_id'][0]), item['photo_path'])
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
