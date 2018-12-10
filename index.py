@@ -105,9 +105,9 @@ class server_handler(BaseHTTPRequestHandler):
                 data = json_parse(self.rfile.read(int(self.headers['Content-Length'])))
                 for item in data:
                     if 'text' in item:
-                        bot.sendMessage(query['user_id'], item['text'])
+                        bot.sendMessage(int(query['user_id'][0]), item['text'])
                     if 'photo_path' in item:
-                        bot.sendPhoto(query['user_id'][0], item['photo_path'])
+                        bot.sendPhoto(int(query['user_id'][0]), item['photo_path'])
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
