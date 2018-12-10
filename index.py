@@ -14,6 +14,7 @@ from json import loads as json_parse
 from random import randint
 import traceback
 import io
+import math
 
 import telepot
 from telepot.loop import MessageLoop
@@ -227,7 +228,7 @@ def onMessage(msg, chat_id, content_type):
                     send('Пример данных — координаты 55.758524,37.658760 (метро Курская)')
                 try:
                     url = '%s/geo?latitude=%f&longitude=%f' % (
-                        API_ORIGIN, location['latitude'], location['longitude'])
+                        API_ORIGIN, location['latitude'] / (180 / math.pi), location['longitude'] / (180 / math.pi))
                     printf('url', url)
                     r = requests.get(url)
                     printf(r, r.json(), r.status_code)
