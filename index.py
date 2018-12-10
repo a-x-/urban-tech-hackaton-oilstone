@@ -105,6 +105,7 @@ class server_handler(BaseHTTPRequestHandler):
             elif self.path.startswith('/bot/debug'):
                 printf('<< DEBUG', self.path, 'method', self.command, query)
                 data = json_parse(self.rfile.read(int(self.headers['Content-Length'])))
+                printf('<< DEBUG << DATA', data)
                 for item in data:
                     if 'text' in item:
                         bot.sendMessage(int(query['user_id'][0]), item['text'])
